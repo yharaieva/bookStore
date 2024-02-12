@@ -1,18 +1,20 @@
 package com.haraieva.bookStore.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haraieva.bookStore.DataBaseTestRule;
-import com.haraieva.bookStore.dto.BookDto;
-import com.haraieva.bookStore.repository.BookRepository;
+import com.haraieva.bookStore.dto.BookChangeDto;
+import com.haraieva.bookStore.service.BookService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -21,25 +23,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 public class BookControllerTest extends DataBaseTestRule {
 
 	@Autowired
 	private MockMvc mockMvc;
 
-	@MockBean
-	private BookRepository repository;
+	@Autowired
+	private BookService service;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	@Test
 	@Transactional
 	public void testAddTwoBooksAndGetAllBooks() throws Exception {
-		BookDto book1 = new BookDto("First Book", "First author");
-		BookDto book2 = new BookDto("Second Book", "Second author");
+		BookChangeDto book1 = new BookChangeDto("First Book", "First author");
+		BookChangeDto book2 = new BookChangeDto("Second Book", "Second author");
 
-		mockMvc.perform(post("/books", book1))
+		mockMvc.perform(post("/books")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(book1))
+				)
 				.andExpect(status().isOk());
-		mockMvc.perform(post("/books", book2))
+
+		mockMvc.perform(post("/books")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(book2))
+				)
 				.andExpect(status().isOk());
+
+		assertThat(service.getBooks()).hasSize(2);
 
 		mockMvc.perform(get("/books"))
 				.andExpect(status().isOk())
@@ -49,10 +63,13 @@ public class BookControllerTest extends DataBaseTestRule {
 	@Test
 	@Transactional
 	public void testUpdateABook() throws Exception {
-		BookDto book = new BookDto("First Book", "First author");
-		BookDto updatedBook = new BookDto("Second Book", "Second author");
+		BookChangeDto book = new BookChangeDto("First Book", "First author");
+		BookChangeDto updatedBook = new BookChangeDto("Second Book", "Second author");
 
-		mockMvc.perform(post("/books", book))
+		mockMvc.perform(post("/books")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(book))
+				)
 				.andExpect(status().isOk());
 
 		mockMvc.perform(get("/books/1"))
@@ -61,7 +78,10 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(jsonPath("$.title").value(book.getTitle()))
 				.andExpect(jsonPath("$.author").value(book.getAuthor()));
 
-		mockMvc.perform(put("/books/1", updatedBook))
+		mockMvc.perform(put("/books/1", updatedBook)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(updatedBook))
+				)
 				.andExpect(status().isOk());
 
 		mockMvc.perform(get("/books/1"))

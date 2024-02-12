@@ -1,9 +1,8 @@
 package com.haraieva.bookStore.controller;
 
+import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
-import com.haraieva.bookStore.entity.BookEntity;
-import com.haraieva.bookStore.exceptions.ResourceNotFoundException;
-import com.haraieva.bookStore.repository.BookRepository;
+import com.haraieva.bookStore.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,36 +19,32 @@ import java.util.List;
 @RequestMapping("/books")
 public class BookController {
 
-	private final BookRepository repository;
+	private final BookService service;
 
 	@Autowired
-	public BookController(BookRepository repository) {
-		this.repository = repository;
+	public BookController(BookService service) {
+		this.service = service;
 	}
 
 	@GetMapping
-	public List<BookEntity> getBooks() {
-		return repository.findAll();
+	public List<BookDto> getBooks() {
+		return service.getBooks();
 	}
 
 	@GetMapping(value = "/{id}", produces = "application/json")
-	public BookEntity getBook(@PathVariable long id) {
-		return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("There is no book with id: " + id));
+	public BookDto getBook(@PathVariable long id) {
+		return service.getBookById(id);
 	}
 
 	@PostMapping
 	@Transactional
-	public BookEntity addBook(@RequestBody BookDto book) {
-		BookEntity bookEntity = new BookEntity(book.getTitle(), book.getAuthor());
-		return repository.save(bookEntity);
+	public BookDto addBook(@RequestBody BookChangeDto book) {
+		return service.addBook(book);
 	}
 
 	@PutMapping("/{id}")
 	@Transactional
-	public BookEntity updateBook(@PathVariable Long id, @RequestBody BookDto book){
-		if (repository.findById(id).isPresent()) {
-			return new BookEntity(id, book.getTitle(), book.getAuthor());
-		}
-		throw new ResourceNotFoundException("There is no book with id: " + id);
+	public BookDto updateBook(@PathVariable Long id, @RequestBody BookChangeDto book){
+		return service.updateBook(id, book);
 	}
 }
