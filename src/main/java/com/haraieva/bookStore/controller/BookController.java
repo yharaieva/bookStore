@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,8 +29,11 @@ public class BookController {
 	}
 
 	@GetMapping
-	public List<BookDto> getBooks() {
-		return service.getBooks();
+	public List<BookDto> getBooks(
+			@RequestParam(defaultValue = "0") Integer pageNo,
+			@RequestParam(defaultValue = "10") Integer pageSize,
+			@RequestParam(defaultValue = "id") String sortBy) {
+		return service.getBooks(pageNo, pageSize, sortBy);
 	}
 
 	@GetMapping(value = "/{id}", produces = "application/json")

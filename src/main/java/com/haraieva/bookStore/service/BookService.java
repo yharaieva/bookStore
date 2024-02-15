@@ -9,9 +9,14 @@ import com.haraieva.bookStore.exceptions.ResourceNotFoundException;
 import com.haraieva.bookStore.mapper.BookMapper;
 import com.haraieva.bookStore.repository.BookRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,10 +28,18 @@ public class BookService {
 	private final BookRepository repository;
 	private final BookMapper mapper;
 
-	public List<BookDto> getBooks() {
-		return repository.findAll().stream()
-				.map(mapper::mapBookEntityToBookDto)
-				.collect(Collectors.toList());
+	public List<BookDto> getBooks(Integer pageNo, Integer pageSize, String sortBy) {
+		Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+
+		Page<BookEntity> pagedResult = repository.findAll(paging);
+
+		if (pagedResult.hasContent()) {
+			return pagedResult.getContent().stream()
+					.map(mapper::mapBookEntityToBookDto)
+					.collect(Collectors.toList());
+		} else {
+			return new ArrayList<>();
+		}
 	}
 
 	public BookDto getBookById(long bookId) {

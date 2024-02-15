@@ -36,6 +36,10 @@ public class BookControllerTest extends DataBaseTestRule {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	private static Integer DEFAULT_PAGE_NO = 0;
+	private static Integer DEFAULT_PAGE_SIZE = 10;
+	private static String DEFAULT_SORT_BY = "id";
+
 	@Test
 	@Transactional
 	public void testAddTwoBooksAndGetAllBooks() throws Exception {
@@ -57,7 +61,7 @@ public class BookControllerTest extends DataBaseTestRule {
 				)
 				.andExpect(status().isOk());
 
-		assertThat(service.getBooks()).hasSize(2);
+		assertThat(service.getBooks(DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, DEFAULT_SORT_BY)).hasSize(2);
 
 		mockMvc.perform(get("/books"))
 				.andExpect(status().isOk())
