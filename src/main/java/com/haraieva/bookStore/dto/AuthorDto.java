@@ -1,5 +1,6 @@
 package com.haraieva.bookStore.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -7,8 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode
-public class BookDto {
-	private Long id;
-	private String title;
-	private AuthorDto author;
+public class AuthorDto {
+	@NotBlank
+	private String firstName;
+	@NotBlank
+	private String lastName;
 }

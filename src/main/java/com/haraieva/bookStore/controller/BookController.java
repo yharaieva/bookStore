@@ -3,6 +3,7 @@ package com.haraieva.bookStore.controller;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
 import com.haraieva.bookStore.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,13 +39,13 @@ public class BookController {
 
 	@PostMapping
 	@Transactional
-	public BookDto addBook(@RequestBody BookChangeDto book) {
+	public BookDto addBook(@RequestBody @Valid BookChangeDto book) {
 		return service.addBook(book);
 	}
 
 	@PutMapping("/{id}")
 	@Transactional
-	public BookDto updateBook(@PathVariable Long id, @RequestBody BookChangeDto book){
+	public BookDto updateBook(@PathVariable Long id, @RequestBody @Valid BookChangeDto book){
 		return service.updateBook(id, book);
 	}
 }

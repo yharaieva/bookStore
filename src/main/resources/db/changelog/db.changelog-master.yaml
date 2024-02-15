@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: db/changelog/schema.sql
+#  - include:
+#      file: db/changelog/truncateBook.sql
+  - include:
+      file: db/changelog/patch_0.0.sql

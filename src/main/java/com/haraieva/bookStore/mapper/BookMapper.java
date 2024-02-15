@@ -1,6 +1,7 @@
 package com.haraieva.bookStore.mapper;
 
 import com.haraieva.bookStore.dto.BookChangeDto;
+import com.haraieva.bookStore.dto.BookChangeDtoWithAuthor;
 import com.haraieva.bookStore.dto.BookDto;
 import com.haraieva.bookStore.entity.BookEntity;
 import org.mapstruct.Mapper;
@@ -9,6 +10,6 @@ import org.mapstruct.Mapper;
 public interface BookMapper {
 
 	BookDto mapBookEntityToBookDto(BookEntity bookEntity);
-	BookEntity mapBookChangeDtoToBookEntity(BookChangeDto book);
-
+	BookEntity mapBookChangeDtoWithAuthorToBookEntity(BookChangeDtoWithAuthor book);
+	BookChangeDtoWithAuthor mapBookChangeDtoToBookChangeDtoWithAuthor(BookChangeDto book);
 }
