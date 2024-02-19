@@ -1,7 +1,6 @@
 package com.haraieva.bookStore.service;
 
 import com.haraieva.bookStore.dto.BookChangeDto;
-import com.haraieva.bookStore.dto.BookChangeDtoWithAuthor;
 import com.haraieva.bookStore.dto.BookDto;
 import com.haraieva.bookStore.entity.AuthorEntity;
 import com.haraieva.bookStore.entity.BookEntity;
@@ -52,9 +51,8 @@ public class BookService {
 	public BookDto addBook(BookChangeDto book) {
 		AuthorEntity authorEntity = authorService.findByLastnameAndFirstnameOrCreate(book.getAuthor());
 
-		BookChangeDtoWithAuthor bookWithAuthor = mapper.mapBookChangeDtoToBookChangeDtoWithAuthor(book);
-		bookWithAuthor.setAuthor(authorEntity);
-		BookEntity bookEntity = mapper.mapBookChangeDtoWithAuthorToBookEntity(bookWithAuthor);
+		BookEntity bookEntity = mapper.mapBookChangeDtoToBookEntity(book);
+		bookEntity.setAuthor(authorEntity);
 
 		repository.save(bookEntity);
 
