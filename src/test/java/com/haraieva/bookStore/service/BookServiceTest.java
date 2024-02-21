@@ -1,8 +1,10 @@
-package com.haraieva.bookStore.repository;
+package com.haraieva.bookStore.service;
 
 import com.haraieva.bookStore.BookStoreApplication;
 import com.haraieva.bookStore.DataBaseTestRule;
-import com.haraieva.bookStore.entity.BookEntity;
+import com.haraieva.bookStore.dto.AuthorDto;
+import com.haraieva.bookStore.dto.BookChangeDto;
+import com.haraieva.bookStore.dto.BookDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,30 +13,25 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = { BookStoreApplication.class })
-public class BookRepositoryTest extends DataBaseTestRule {
+public class BookServiceTest extends DataBaseTestRule {
 
 	@Autowired
-	private BookRepository bookRepository;
+	private BookService bookService;
 
 	@Test
 	@Transactional
-	public void testSaveNewBookAndUpdateTheCount() {
-		long initialCount = bookRepository.count();
-		BookEntity bookEntity = new BookEntity("First Book", "Test author");
+	public void testAddNewBook() {
+		BookChangeDto bookDto = new BookChangeDto("First Book", new AuthorDto("testFirstName", "testLastName"));
 
-		bookRepository.save(bookEntity);
+		BookDto addedBook = bookService.addBook(bookDto);
 
-		Long newCount = bookRepository.count();
-		Optional<BookEntity> retrievedBook = bookRepository.findById(newCount);
+		BookDto retrievedBook = bookService.getBookById(addedBook.getId());
 
-		assertEquals(newCount, initialCount + 1);
-		assertEquals(bookEntity, retrievedBook.get());
+		assertEquals(addedBook, retrievedBook);
 	}
 }

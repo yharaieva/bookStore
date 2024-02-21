@@ -3,6 +3,7 @@ package com.haraieva.bookStore.controller;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
 import com.haraieva.bookStore.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,8 +29,11 @@ public class BookController {
 	}
 
 	@GetMapping
-	public List<BookDto> getBooks() {
-		return service.getBooks();
+	public List<BookDto> getBooks(
+			@RequestParam(defaultValue = "0") Integer pageNo,
+			@RequestParam(defaultValue = "10") Integer pageSize,
+			@RequestParam(defaultValue = "id") String sortBy) {
+		return service.getBooks(pageNo, pageSize, sortBy);
 	}
 
 	@GetMapping(value = "/{id}", produces = "application/json")
@@ -38,13 +43,13 @@ public class BookController {
 
 	@PostMapping
 	@Transactional
-	public BookDto addBook(@RequestBody BookChangeDto book) {
+	public BookDto addBook(@RequestBody @Valid BookChangeDto book) {
 		return service.addBook(book);
 	}
 
 	@PutMapping("/{id}")
 	@Transactional
-	public BookDto updateBook(@PathVariable Long id, @RequestBody BookChangeDto book){
+	public BookDto updateBook(@PathVariable Long id, @RequestBody @Valid BookChangeDto book){
 		return service.updateBook(id, book);
 	}
 }
