@@ -27,6 +27,6 @@ public class BookEntity {
 	private String title;
 
 	@ManyToOne
-	@JoinColumn(name="author.id")
+	@JoinColumn
 	private AuthorEntity author;
 }

@@ -2,7 +2,7 @@ package com.haraieva.bookStore.service;
 
 import com.haraieva.bookStore.BookStoreApplication;
 import com.haraieva.bookStore.DataBaseTestRule;
-import com.haraieva.bookStore.dto.AuthorDto;
+import com.haraieva.bookStore.dto.AuthorChangeDto;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class BookServiceTest extends DataBaseTestRule {
 	@Test
 	@Transactional
 	public void testAddNewBook() {
-		BookChangeDto bookDto = new BookChangeDto("First Book", new AuthorDto("testFirstName", "testLastName"));
+		BookChangeDto bookDto = new BookChangeDto("First Book", 1L);
 
 		BookDto addedBook = bookService.addBook(bookDto);
 

@@ -11,5 +11,5 @@ public class BookChangeDto {
 	@NotBlank
 	private String title;
 	@Valid
-	private AuthorDto author;
+	private Long authorId;
 }

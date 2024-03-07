@@ -6,11 +6,10 @@ create table if not exists author (
     );
 
 ALTER TABLE book
-RENAME COLUMN author TO author_id;
+ADD COLUMN author_id bigint not null;
 
 ALTER TABLE book
-ALTER COLUMN author_id TYPE bigint
-USING author_id::bigint;
+DROP COLUMN author;
 
 alter table book
     ADD CONSTRAINT  fk_author
