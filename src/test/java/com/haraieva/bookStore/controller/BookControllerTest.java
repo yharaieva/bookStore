@@ -2,7 +2,7 @@ package com.haraieva.bookStore.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.haraieva.bookStore.DataBaseTestRule;
-import com.haraieva.bookStore.dto.AuthorDto;
+import com.haraieva.bookStore.dto.AuthorChangeDto;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.service.BookService;
 import org.junit.Test;
@@ -43,11 +43,13 @@ public class BookControllerTest extends DataBaseTestRule {
 	@Test
 	@Transactional
 	public void testAddTwoBooksAndGetAllBooks() throws Exception {
-		AuthorDto author1 = new AuthorDto("testFirstName_1", "testLastName_1");
-		AuthorDto author2 = new AuthorDto("testFirstName_2", "testLastName_2");
+		AuthorChangeDto author1 = new AuthorChangeDto("testFirstName_1", "testLastName_1");
+		AuthorChangeDto author2 = new AuthorChangeDto("testFirstName_2", "testLastName_2");
+		createAnAuthor(author1);
+		createAnAuthor(author2);
 
-		BookChangeDto book1 = new BookChangeDto("First Book", author1);
-		BookChangeDto book2 = new BookChangeDto("Second Book", author2);
+		BookChangeDto book1 = new BookChangeDto("First Book", 1L);
+		BookChangeDto book2 = new BookChangeDto("Second Book", 2L);
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -71,11 +73,13 @@ public class BookControllerTest extends DataBaseTestRule {
 	@Test
 	@Transactional
 	public void testUpdateABook() throws Exception {
-		AuthorDto author = new AuthorDto("testFirstName", "testLastName");
-		AuthorDto updatedAuthor = new AuthorDto("testFirstNameUpdated", "testLastNameUpdated");
+		AuthorChangeDto author = new AuthorChangeDto("testFirstName", "testLastName");
+		AuthorChangeDto newAuthor = new AuthorChangeDto("testFirstNameUpdated", "testLastNameUpdated");
+		createAnAuthor(author);
+		createAnAuthor(newAuthor);
 
-		BookChangeDto book = new BookChangeDto("First Book", author);
-		BookChangeDto updatedBook = new BookChangeDto("Second Book", updatedAuthor);
+		BookChangeDto book = new BookChangeDto("First Book", 1L);
+		BookChangeDto updatedBook = new BookChangeDto("Second Book", 2L);
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -87,8 +91,9 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1))
 				.andExpect(jsonPath("$.title").value(book.getTitle()))
-				.andExpect(jsonPath("$.author.firstName").value(book.getAuthor().getFirstName()))
-				.andExpect(jsonPath("$.author.lastName").value(book.getAuthor().getLastName()));
+				.andExpect(jsonPath("$.author.id").value(book.getAuthorId()))
+				.andExpect(jsonPath("$.author.firstName").value(author.getFirstName()))
+				.andExpect(jsonPath("$.author.lastName").value(author.getLastName()));
 
 		mockMvc.perform(put("/books/1", updatedBook)
 						.contentType(MediaType.APPLICATION_JSON)
@@ -100,15 +105,18 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1))
 				.andExpect(jsonPath("$.title").value(updatedBook.getTitle()))
-				.andExpect(jsonPath("$.author.firstName").value(updatedBook.getAuthor().getFirstName()))
-				.andExpect(jsonPath("$.author.lastName").value(updatedBook.getAuthor().getLastName()));
+				.andExpect(jsonPath("$.author.id").value(updatedBook.getAuthorId()))
+				.andExpect(jsonPath("$.author.firstName").value(newAuthor.getFirstName()))
+				.andExpect(jsonPath("$.author.lastName").value(newAuthor.getLastName()));
 	}
 
 	@Test
 	@Transactional
 	public void testAddABookWithEmptyTitleThrowsAnError() throws Exception {
-		AuthorDto author = new AuthorDto("testFirstName", "testLastName");
-		BookChangeDto book = new BookChangeDto("", author);
+		AuthorChangeDto author = new AuthorChangeDto("testFirstName", "testLastName");
+		createAnAuthor(author);
+
+		BookChangeDto book = new BookChangeDto("", 1L);
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -117,38 +125,47 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(status().isBadRequest());
 	}
 
-	@Test
-	@Transactional
-	public void testAddABookWithEmptyAuthorFirstNameThrowsAnError() throws Exception {
-		AuthorDto author = new AuthorDto("", "testLastName");
-		BookChangeDto book = new BookChangeDto("A book", author);
+//	@Test
+//	@Transactional
+//	public void testAddABookWithEmptyAuthorFirstNameThrowsAnError() throws Exception {
+//		AuthorChangeDto author = new AuthorChangeDto("", "testLastName");
+//
+//		BookChangeDto book = new BookChangeDto("A book", author);
+//
+//		mockMvc.perform(post("/books")
+//						.contentType(MediaType.APPLICATION_JSON)
+//						.content(objectMapper.writeValueAsString(book))
+//				)
+//				.andExpect(status().isBadRequest());
+//	}
+//
+//	@Test
+//	@Transactional
+//	public void testUpdateABookWithEmptyAuthorLastNameThrowsAnError() throws Exception {
+//		AuthorChangeDto author = new AuthorChangeDto("testFirstName", "testLastName");
+//		AuthorChangeDto updatedAuthor = new AuthorChangeDto("testFirstNameUpdated", "");
+//
+//		BookChangeDto book = new BookChangeDto("First Book", author);
+//		BookChangeDto updatedBook = new BookChangeDto("Second Book", updatedAuthor);
+//
+//		mockMvc.perform(post("/books")
+//						.contentType(MediaType.APPLICATION_JSON)
+//						.content(objectMapper.writeValueAsString(book))
+//				)
+//				.andExpect(status().isOk());
+//
+//		mockMvc.perform(put("/books/1", updatedBook)
+//						.contentType(MediaType.APPLICATION_JSON)
+//						.content(objectMapper.writeValueAsString(updatedBook))
+//				)
+//				.andExpect(status().isBadRequest());
+//	}
 
-		mockMvc.perform(post("/books")
+	private void createAnAuthor (AuthorChangeDto authorChangeDto) throws Exception {
+		mockMvc.perform(post("/authors")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(book))
-				)
-				.andExpect(status().isBadRequest());
-	}
-
-	@Test
-	@Transactional
-	public void testUpdateABookWithEmptyAuthorLastNameThrowsAnError() throws Exception {
-		AuthorDto author = new AuthorDto("testFirstName", "testLastName");
-		AuthorDto updatedAuthor = new AuthorDto("testFirstNameUpdated", "");
-
-		BookChangeDto book = new BookChangeDto("First Book", author);
-		BookChangeDto updatedBook = new BookChangeDto("Second Book", updatedAuthor);
-
-		mockMvc.perform(post("/books")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(book))
+						.content(objectMapper.writeValueAsString(authorChangeDto))
 				)
 				.andExpect(status().isOk());
-
-		mockMvc.perform(put("/books/1", updatedBook)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(updatedBook))
-				)
-				.andExpect(status().isBadRequest());
 	}
 }
