@@ -5,7 +5,6 @@ import com.haraieva.bookStore.dto.AuthorDto;
 import com.haraieva.bookStore.service.AuthorService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,13 +30,11 @@ public class AuthorController {
 	}
 
 	@PostMapping
-	@Transactional
 	public AuthorDto addAuthor(@RequestBody @Valid AuthorChangeDto author) {
 		return service.addAuthor(author);
 	}
 
 	@DeleteMapping("/{id}")
-	@Transactional
 	public void deleteAuthor(@PathVariable Long id) {
 		service.deleteAuthor(id);
 	}

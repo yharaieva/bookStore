@@ -3,13 +3,16 @@ package com.haraieva.bookStore.service;
 import com.haraieva.bookStore.dto.AuthorDto;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
+import com.haraieva.bookStore.entity.AuthorEntity;
 import com.haraieva.bookStore.entity.BookEntity;
 import com.haraieva.bookStore.exceptions.ResourceNotFoundException;
+import com.haraieva.bookStore.fileStorage.FileStorage;
 import com.haraieva.bookStore.mapper.AuthorMapper;
 import com.haraieva.bookStore.mapper.BookMapper;
 import com.haraieva.bookStore.repository.BookRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,8 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -28,18 +32,21 @@ public class BookService {
 	private final BookRepository repository;
 	private final BookMapper bookMapper;
 	private final AuthorMapper authorMapper;
+	private final FileStorage fileStorage;
 
-	public List<BookDto> getBooks(Integer pageNo, Integer pageSize, String sortBy) {
+	public Page<BookDto> getBooks(Integer pageNo, Integer pageSize, String sortBy) {
 		Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
 
 		Page<BookEntity> pagedResult = repository.findAll(paging);
 
 		if (pagedResult.hasContent()) {
-			return pagedResult.getContent().stream()
+			return new PageImpl<>(
+					pagedResult.getContent().stream()
 					.map(bookMapper::mapBookEntityToBookDto)
-					.collect(Collectors.toList());
+					.collect(Collectors.toList())
+			);
 		} else {
-			return new ArrayList<>();
+			return new PageImpl<>(new ArrayList<>());
 		}
 	}
 
@@ -51,10 +58,16 @@ public class BookService {
 
 	@Transactional
 	public BookDto addBook(BookChangeDto book) {
-		AuthorDto authorDto = authorService.findById(book.getAuthorId());
-
 		BookEntity bookEntity = bookMapper.mapBookChangeDtoToBookEntity(book);
-		bookEntity.setAuthor(authorMapper.mapAuthorDtoToAuthorEntity(authorDto));
+
+		Stream<AuthorDto> authorDtos = book.getAuthorIds().stream()
+				.map(authorService::findById);
+
+		Set<AuthorEntity> authors = authorDtos
+				.map(authorMapper::mapAuthorDtoToAuthorEntity)
+				.collect(Collectors.toSet());
+
+		bookEntity.setAuthors(authors);
 
 		repository.save(bookEntity);
 
@@ -64,11 +77,16 @@ public class BookService {
 	@Transactional
 	public BookDto updateBook(Long id, BookChangeDto book) {
 		BookEntity bookEntity = findByIdOrThrow(id);
-		AuthorDto authorDto = authorService.findById(book.getAuthorId());
-
 		bookMapper.update(bookEntity, book);
-//		bookEntity.setTitle(book.getTitle());
-		bookEntity.setAuthor(authorMapper.mapAuthorDtoToAuthorEntity(authorDto));
+
+		Stream<AuthorDto> authorDtos = book.getAuthorIds().stream()
+				.map(authorService::findById);
+
+		Set<AuthorEntity> authors = authorDtos
+				.map(authorMapper::mapAuthorDtoToAuthorEntity)
+				.collect(Collectors.toSet());
+
+		bookEntity.setAuthors(authors);
 
 		return bookMapper.mapBookEntityToBookDto(bookEntity);
 	}

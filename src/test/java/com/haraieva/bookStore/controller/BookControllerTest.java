@@ -15,6 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,8 +50,8 @@ public class BookControllerTest extends DataBaseTestRule {
 		createAnAuthor(author1);
 		createAnAuthor(author2);
 
-		BookChangeDto book1 = new BookChangeDto("First Book", 1L);
-		BookChangeDto book2 = new BookChangeDto("Second Book", 2L);
+		BookChangeDto book1 = new BookChangeDto("First Book", Set.of(1L));
+		BookChangeDto book2 = new BookChangeDto("Second Book", Set.of(2L));
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -78,8 +80,8 @@ public class BookControllerTest extends DataBaseTestRule {
 		createAnAuthor(author);
 		createAnAuthor(newAuthor);
 
-		BookChangeDto book = new BookChangeDto("First Book", 1L);
-		BookChangeDto updatedBook = new BookChangeDto("Second Book", 2L);
+		BookChangeDto book = new BookChangeDto("First Book", Set.of(1L));
+		BookChangeDto updatedBook = new BookChangeDto("Second Book", Set.of(2L));
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -91,7 +93,7 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1))
 				.andExpect(jsonPath("$.title").value(book.getTitle()))
-				.andExpect(jsonPath("$.author.id").value(book.getAuthorId()))
+				.andExpect(jsonPath("$.author.id").value(book.getAuthorIds()))
 				.andExpect(jsonPath("$.author.firstName").value(author.getFirstName()))
 				.andExpect(jsonPath("$.author.lastName").value(author.getLastName()));
 
@@ -105,7 +107,7 @@ public class BookControllerTest extends DataBaseTestRule {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(1))
 				.andExpect(jsonPath("$.title").value(updatedBook.getTitle()))
-				.andExpect(jsonPath("$.author.id").value(updatedBook.getAuthorId()))
+				.andExpect(jsonPath("$.author.id").value(updatedBook.getAuthorIds()))
 				.andExpect(jsonPath("$.author.firstName").value(newAuthor.getFirstName()))
 				.andExpect(jsonPath("$.author.lastName").value(newAuthor.getLastName()));
 	}
@@ -116,7 +118,7 @@ public class BookControllerTest extends DataBaseTestRule {
 		AuthorChangeDto author = new AuthorChangeDto("testFirstName", "testLastName");
 		createAnAuthor(author);
 
-		BookChangeDto book = new BookChangeDto("", 1L);
+		BookChangeDto book = new BookChangeDto("", Set.of(1L));
 
 		mockMvc.perform(post("/books")
 						.contentType(MediaType.APPLICATION_JSON)
