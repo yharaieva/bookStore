@@ -3,7 +3,6 @@ package com.haraieva.bookStore.service;
 import com.haraieva.bookStore.dto.AuthorChangeDto;
 import com.haraieva.bookStore.dto.AuthorDto;
 import com.haraieva.bookStore.entity.AuthorEntity;
-import com.haraieva.bookStore.entity.BookEntity;
 import com.haraieva.bookStore.exceptions.ResourceNotFoundException;
 import com.haraieva.bookStore.mapper.AuthorMapper;
 import com.haraieva.bookStore.repository.AuthorRepository;
@@ -41,14 +40,4 @@ public class AuthorService {
 		return repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("There is no author with id: " + id));
 	}
-
-//	@Transactional
-//	public AuthorEntity findByLastnameAndFirstnameOrThrow(AuthorChangeDto authorChangeDto) {
-//		Optional<AuthorEntity> optionalAuthor = repository.findByLastNameAndFirstName(authorChangeDto.getLastName(), authorChangeDto.getFirstName());
-//		if (optionalAuthor.isEmpty()) {
-//			throw new ResourceNotFoundException(String.format("There is no author with the name %1$s %2$s",
-//					authorChangeDto.getFirstName(), authorChangeDto.getLastName()));
-//		}
-//		return optionalAuthor.get();
-//	}
 }
