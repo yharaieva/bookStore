@@ -1,53 +1,38 @@
 package com.haraieva.bookStore.service;
 
-import com.haraieva.bookStore.dto.AuthorDto;
 import com.haraieva.bookStore.dto.BookChangeDto;
 import com.haraieva.bookStore.dto.BookDto;
 import com.haraieva.bookStore.entity.AuthorEntity;
 import com.haraieva.bookStore.entity.BookEntity;
 import com.haraieva.bookStore.exceptions.ResourceNotFoundException;
-import com.haraieva.bookStore.fileStorage.FileStorage;
-import com.haraieva.bookStore.mapper.AuthorMapper;
+import com.haraieva.bookStore.loggers.Logger;
 import com.haraieva.bookStore.mapper.BookMapper;
+import com.haraieva.bookStore.repository.AuthorRepository;
 import com.haraieva.bookStore.repository.BookRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
 public class BookService {
 
-	private final AuthorService authorService;
+	private final AuthorRepository authorRepository;
 	private final BookRepository repository;
 	private final BookMapper bookMapper;
-	private final AuthorMapper authorMapper;
-	private final FileStorage fileStorage;
+	private final Logger logger;
 
 	public Page<BookDto> getBooks(Integer pageNo, Integer pageSize, String sortBy) {
 		Pageable paging = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
 
-		Page<BookEntity> pagedResult = repository.findAll(paging);
-
-		if (pagedResult.hasContent()) {
-			return new PageImpl<>(
-					pagedResult.getContent().stream()
-					.map(bookMapper::mapBookEntityToBookDto)
-					.collect(Collectors.toList())
-			);
-		} else {
-			return new PageImpl<>(new ArrayList<>());
-		}
+		return repository.findAll(paging)
+				.map(bookMapper::mapBookEntityToBookDto);
 	}
 
 	public BookDto getBookById(long bookId) {
@@ -60,13 +45,7 @@ public class BookService {
 	public BookDto addBook(BookChangeDto book) {
 		BookEntity bookEntity = bookMapper.mapBookChangeDtoToBookEntity(book);
 
-		Stream<AuthorDto> authorDtos = book.getAuthorIds().stream()
-				.map(authorService::findById);
-
-		Set<AuthorEntity> authors = authorDtos
-				.map(authorMapper::mapAuthorDtoToAuthorEntity)
-				.collect(Collectors.toSet());
-
+		Set<AuthorEntity> authors = Set.copyOf(authorRepository.findAllById(book.getAuthorIds()));
 		bookEntity.setAuthors(authors);
 
 		repository.save(bookEntity);
@@ -77,16 +56,18 @@ public class BookService {
 	@Transactional
 	public BookDto updateBook(Long id, BookChangeDto book) {
 		BookEntity bookEntity = findByIdOrThrow(id);
-		bookMapper.update(bookEntity, book);
+		Set<Long> authorIds = book.getAuthorIds();
 
-		Stream<AuthorDto> authorDtos = book.getAuthorIds().stream()
-				.map(authorService::findById);
+		if (authorIds.isEmpty()) {
+			deleteBook(id);
+			//?
+			throw new ResourceNotFoundException("The book was deleted because had no authors");
+			}
 
-		Set<AuthorEntity> authors = authorDtos
-				.map(authorMapper::mapAuthorDtoToAuthorEntity)
-				.collect(Collectors.toSet());
-
+		Set<AuthorEntity> authors = Set.copyOf(authorRepository.findAllById(authorIds));
 		bookEntity.setAuthors(authors);
+
+		bookMapper.update(bookEntity, book);
 
 		return bookMapper.mapBookEntityToBookDto(bookEntity);
 	}
