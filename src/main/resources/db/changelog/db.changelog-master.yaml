@@ -5,3 +5,5 @@ databaseChangeLog:
 #      file: db/changelog/truncateBook.sql
   - include:
       file: db/changelog/0.0.1_createAuthorTable_updateBookTable.sql
+  - include:
+      file: db/changelog/0.0.2_createTableHas.sql

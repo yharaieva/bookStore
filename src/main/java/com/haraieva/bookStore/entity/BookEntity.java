@@ -10,11 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
 
 import java.util.Set;
-
-import static org.hibernate.annotations.CascadeType.REMOVE;
 
 @Entity
 @Table(name = "book")
@@ -31,6 +28,5 @@ public class BookEntity {
 	private String title;
 
 	@ManyToMany(mappedBy = "books")
-	@Cascade(REMOVE)
 	private Set<AuthorEntity> authors;
 }
